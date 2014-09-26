@@ -20,3 +20,10 @@ Buckle up, Billy, because this train has no *rails*!
 
 ![The anagram](./logo.jpg)
 
+## Aknowledgments
+Most of the content of this tutorial is based on [Imran Nazar's excellent GameBoy Emulation in Javascript](http://imrannazar.com/GameBoy-Emulation-in-JavaScript) tutorial.
+
+If you'd like to know the origin of this tutorial, you might want to read the story
+of [How I built my own Twitch-Plays-Pokémon](http://ajipirijou.com/talks/how-i-built-my-own-tpp-part-1/).
+
+Most of the code here is copied from [mimey](https://github.com/eljojo/mimey), which is a fork of [@janogonzale's mimey](https://github.com/janogonzalez/mimey).
