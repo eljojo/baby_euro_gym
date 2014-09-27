@@ -1,7 +1,6 @@
 class GPU
   attr_reader :vram
   attr_accessor :cpu
-  attr_reader :scrn # delete this later
 
   def initialize(screen)
     @screen = screen
@@ -117,13 +116,13 @@ class GPU
       4.times do |i|
         case ((val >> (i * 2)) & 3)
         when 0
-          @palette[:bg][i] = 255
+          @palette[:bg][i] = 3 # lightest
         when 1
-          @palette[:bg][i] = 192
+          @palette[:bg][i] = 2
         when 2
-          @palette[:bg][i] = 96
+          @palette[:bg][i] = 1
         when 3
-          @palette[:bg][i] = 0
+          @palette[:bg][i] = 0 # darkest
         end
       end
     # OBJ0 palette mapping
@@ -131,13 +130,13 @@ class GPU
       4.times do |i|
         case ((val >> (i * 2)) & 3)
         when 0
-          @palette[:obj0][i] = 255
+          @palette[:obj0][i] = 3 # lightest
         when 1
-          @palette[:obj0][i] = 192
+          @palette[:obj0][i] = 2
         when 2
-          @palette[:obj0][i] = 96
+          @palette[:obj0][i] = 1
         when 3
-          @palette[:obj0][i] = 0
+          @palette[:obj0][i] = 0 # darkest
         end
       end
     # OBJ1 palette mapping
@@ -145,13 +144,13 @@ class GPU
       4.times do |i|
         case ((val >> (i * 2)) & 3)
         when 0
-          @palette[:obj1][i] = 255
+          @palette[:obj1][i] = 3 # lightest
         when 1
-          @palette[:obj1][i] = 192
+          @palette[:obj1][i] = 2
         when 2
-          @palette[:obj1][i] = 96
+          @palette[:obj1][i] = 1
         when 3
-          @palette[:obj1][i] = 0
+          @palette[:obj1][i] = 0 # darkest
         end
       end
     else
@@ -279,7 +278,7 @@ class GPU
         tilerow = @tilemap[@vram[mapbase + t]][y]
         160.downto(1).each do |w|
           @scanrow[160 - x] = tilerow[x]
-          @screen[linebase - 800] = @palette[:bg][tilerow[x]]
+          @screen[linebase] = @palette[:bg][tilerow[x]]
           x += 1
           if x == 8 then
             t = (t + 1) & 31

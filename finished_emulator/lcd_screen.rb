@@ -1,15 +1,7 @@
 class LcdScreen
   WIDTH = 160
-  HEIGHT = 10 #144
-  COLORS = [107, 100, 47, 40] # lightest to darkest
-  COLOR_MAPPINGS = {
-    255 => 0,
-    192 => 1,
-    96 => 2,
-    0 => 3
-  }
-
-  attr_accessor :screen
+  HEIGHT = 144
+  COLORS = [40, 47, 100, 107] # darkest to lightest
 
   def initialize
     @screen = (WIDTH * HEIGHT).times.map { 0 }
@@ -24,20 +16,14 @@ class LcdScreen
 
   def []=(coords, color)
     return unless color
-    # i want to do it this way so I can set @screen to @scrn
     @screen[coords] = color
-    # x, y = coords
-    # if x < WIDTH and y < HEIGHT
-    #   @screen[y * WIDTH + x] = color_code
-    # end
   end
 
   private
   # https://github.com/fazibear/colorize/blob/master/lib/colorize.rb
   # http://misc.flogisoft.com/bash/tip_colors_and_formatting
   def print_pixel(color)
-    # this is not optimal. lol.
-    code = COLORS[COLOR_MAPPINGS[color]]
+    code = COLORS[color]
     print "\e[49m\e[#{code}m \e[49m"
   end
 end
