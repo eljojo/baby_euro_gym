@@ -10,7 +10,6 @@ class GPU
 
   def reset
     @vram = Array.new(8192, 0x00)
-    @oam = Array.new(160, 0x00)
     @reg = []
 
     @palette = {}
@@ -111,7 +110,6 @@ class GPU
     when 6
       160.times do |i|
         v = @mmu[(val << 8) + i]
-        @oam[i] = v
         updateoam(0xFE00 + i, v)
       end
     # BG palette mapping
@@ -225,7 +223,7 @@ class GPU
         @intfired |= 8
       end
 
-      @curscan += 640
+      @curscan += 160
       @modeclocks = 0
     end
   end
@@ -281,7 +279,7 @@ class GPU
         tilerow = @tilemap[@vram[mapbase + t]][y]
         160.downto(1).each do |w|
           @scanrow[160 - x] = tilerow[x]
-          @screen[linebase] = @palette[:bg][tilerow[x]]
+          @screen[linebase - 800] = @palette[:bg][tilerow[x]]
           x += 1
           if x == 8 then
             t = (t + 1) & 31

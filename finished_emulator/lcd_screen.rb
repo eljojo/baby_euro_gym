@@ -16,7 +16,7 @@ class LcdScreen
   end
 
   def render
-    @screen.compact.each_with_index do |color, pos|
+    @screen.each_with_index do |color, pos|
       print_pixel(color)
       print "\n" if (pos + 1) % WIDTH == 0
     end
