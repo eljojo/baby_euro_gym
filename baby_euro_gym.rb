@@ -24,8 +24,14 @@ emulator = Emulator.new
 emulator.load_rom "./test_rom.gb"
 emulator.reset
 
-5.times do
-  emulator.frame
-end
+require "finished_emulator/debugger"
+require "reference/reference_tester"
+emulator_tester = EmulatorTester.new(emulator)
+emulator_tester.run_test
 
-emulator.render
+
+# 5.times do
+#   emulator.frame
+# end
+
+# emulator.render

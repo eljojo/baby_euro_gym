@@ -104,5 +104,9 @@ class Debugger
         "#{var}: #{self.send(var)}"
       end.join(" ")
     end
+
+    # hack
+    def bg_palette
+    end
   end
 end
