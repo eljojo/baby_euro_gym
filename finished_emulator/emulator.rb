@@ -3,12 +3,11 @@ class Emulator
   attr_reader :screen
   attr_reader :gpu # delete this later
 
-  def initialize(cpu_options = {})
-    cpu_options = CPU::DEFAULTS.merge(cpu_options)
-    @cpu = CPU.new(cpu_options)
+  def initialize
     @screen = LcdScreen.new
     @gpu = GPU.new(@screen)
-    @cpu.mmu.gpu = @gpu
+    @mmu = MMU.new(@gpu)
+    @cpu = CPU.new(@mmu)
     @gpu.cpu = @cpu
   end
 
@@ -17,21 +16,12 @@ class Emulator
     @cpu.load_with(*rom.unpack("C*"))
   end
 
-  def run
-    reset
-    loop do
-      step
-      gets if step_by_step
-    end
-  end
-
   def reset
     @cpu.reset
   end
 
   def step
     @cpu.step
-    @cpu.debug if !!debug_mode
     @gpu.step
 
     if step_counter then
@@ -48,8 +38,8 @@ class Emulator
     end while @cpu.clock_m < fclk
   end
 
-  def debug
-    @cpu.debug
+  def render
+    screen.render
   end
 
   def run_test(enum)

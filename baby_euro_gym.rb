@@ -28,8 +28,4 @@ emulator.reset
   emulator.frame
 end
 
-screen = LcdScreen.new
-scrn = emulator.gpu.scrn.compact
-
-screen.screen = scrn
-screen.render
+emulator.render

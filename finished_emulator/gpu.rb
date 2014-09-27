@@ -24,8 +24,6 @@ class GPU
       end
     end
 
-    @scrn = [] #Array.new(160 * 144 * 4)
-
     @curline = 0
     @curscan = 0
     @linemode = 2
@@ -283,7 +281,7 @@ class GPU
         tilerow = @tilemap[@vram[mapbase + t]][y]
         160.downto(1).each do |w|
           @scanrow[160 - x] = tilerow[x]
-          @scrn[linebase] = @palette[:bg][tilerow[x]]
+          @screen[linebase] = @palette[:bg][tilerow[x]]
           x += 1
           if x == 8 then
             t = (t + 1) & 31

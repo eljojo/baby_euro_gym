@@ -1,8 +1,6 @@
 class MMU
-  attr_accessor :gpu
-
   # Initializes the memory areas
-  def initialize()
+  def initialize(gpu)
     @internal_memory = Array.new(8192, 0x00)
     @zram = Array.new(128, 0x00)
     @external_memory = Array.new(32768, 0x00)
@@ -12,6 +10,8 @@ class MMU
     @ram_offset = 0
 
     @ie = 0
+
+    @gpu = gpu
   end
 
   # Reads a byte from to the different memory areas
@@ -60,28 +60,25 @@ class MMU
   # Writes a byte to the different memory areas
   def []=(i, n)
     case i
-      # VRAM
+    # VRAM
     when 0x8000..0x9FFF
       @gpu.vram[i & 0x1FFF] = n
       @gpu.update_tile(i & 0x1FFF, n)
-      # External RAM
+    # External RAM
     when 0xA000..0xBFFF
       @external_memory[@ram_offset + (i & 0x1FFF)] = n
-      # Work RAM and echo
+    # Work RAM and echo
     when 0xC000..0xFDFF
       @internal_memory[i & 0x1FFF] = n
+    # OAM
     when 0xFE00..0xFEFF
-      # if ((addr & 0xFF) < 0xA0) GPU._oam[addr & 0xFF] = val;
-      # GPU.updateoam(addr, val);
-      puts "OAM"
-      exit
     when 0xFFFF
       @ie
     when 0xFF00..0xFF3F
-      # Zero page
+    # Zero page
     when 0xFF80..0xFFFF
       @zram[i & 0x7F] = n
-      # GPU (64 registers)
+    # GPU (64 registers)
     when 0xFF40..0xFF7F
       @gpu[i] = n
     else

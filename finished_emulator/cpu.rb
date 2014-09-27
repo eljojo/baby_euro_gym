@@ -6,8 +6,6 @@ class CPU
   attr_accessor :pc
   # 16 bit SP register (Stack pointer)
   attr_accessor :sp
-  # MMU
-  attr_accessor :mmu
 
   # CPU Clock
   attr_accessor :clock_m
@@ -40,7 +38,7 @@ class CPU
   # Creates a new CPU and initializes with the provided options
   # if no options where give all the registers will be initialized
   # with deafult values
-  def initialize(options = {})
+  def initialize(mmu, options = {})
     DEFAULTS.merge(options).each do |k, v|
       instance_variable_set("@#{k}", v)
     end
@@ -49,7 +47,8 @@ class CPU
     @clock_t = 0
     @r_m = 0
     @r_t = 0
-    @mmu = MMU.new
+
+    @mmu = mmu
   end
 
   # restarts the emulation
