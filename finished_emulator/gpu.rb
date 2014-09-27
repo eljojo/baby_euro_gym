@@ -32,8 +32,6 @@ class GPU
     @modeclocks = 0
     @yscrl = 0
     @xscrl = 0
-    @winy = 0
-    @winx = 0
     @raster = 0
     @ints = 0
     @intfired = 0
@@ -88,10 +86,6 @@ class GPU
       @curline
     when 5
       @raster
-    when 10
-      @winy
-    when 11
-      @winx + 7
     else
       @reg[gaddr]
     end
@@ -116,14 +110,13 @@ class GPU
       @xscrl = val
     when 5
       @raster = val
-      # OAM DMA
     when 6
       160.times do |i|
         v = @mmu[(val << 8) + i]
         @oam[i] = v
         updateoam(0xFE00 + i, v)
       end
-      # BG palette mapping
+    # BG palette mapping
     when 7
       4.times do |i|
         case ((val >> (i * 2)) & 3)
@@ -137,7 +130,7 @@ class GPU
           @palette[:bg][i] = 0
         end
       end
-      # OBJ0 palette mapping
+    # OBJ0 palette mapping
     when 8
       4.times do |i|
         case ((val >> (i * 2)) & 3)
@@ -151,7 +144,7 @@ class GPU
           @palette[:obj0][i] = 0
         end
       end
-      # OBJ1 palette mapping
+    # OBJ1 palette mapping
     when 9
       4.times do |i|
         case ((val >> (i * 2)) & 3)
@@ -165,10 +158,6 @@ class GPU
           @palette[:obj1][i] = 0
         end
       end
-    when 10
-      @winy = val
-    when 11
-      @winx = val - 7
     else
       puts "GPU trying to write #{val} into #{addr}"
     end
@@ -222,17 +211,13 @@ class GPU
       # End of hblank for last scanline; render screen
       if @curline == 143 then
         @linemode = 1
-        # @canvas.putImageData(@scrn, 0, 0)
-        # MMU._if |= 1
         if (@ints & 2) != 0x00 then
           @intfired |= 2
-          # MMU._if|=2;
         end
       else
         @linemode = 2
         if (@ints & 4) != 0x00 then
           @intfired |= 2
-          # MMU._if|=2;
         end
       end
 
@@ -240,7 +225,6 @@ class GPU
 
       if @curline == @raster and (@ints & 8) != 0x00 then
         @intfired |= 8
-        # MMU._if|=2;
       end
 
       @curscan += 640
@@ -259,7 +243,6 @@ class GPU
       end
       if (@ints & 4) != 0x00 then
         @intfired |= 4
-        # MMU._if|=2;
       end
     end
 
@@ -279,59 +262,35 @@ class GPU
       @linemode = 0
       if (@ints & 1) != 0x00 then
         @intfired |= 1
-        # MMU._if|=2;
       end
 
       if @lcdon then
-        new_renderscan
+        renderscan
       end
     end
   end
 
-  def new_renderscan
+  def renderscan
     if @bgon then
       linebase = @curscan
       mapbase = @bgmapbase + ((((@curline + @yscrl) & 255) >> 3) << 5)
       y = (@curline + @yscrl) & 7
       x = @xscrl & 7
       t = (@xscrl >> 3) & 31
-      # w = 160
 
       if @bgtilebase != 0x00 then
-        tile = @vram[mapbase + t]
-        if (tile < 128) then
-          tile = 256 + tile
-        end
-        tilerow = @tilemap[tile][y]
-        160.downto(1).each do |w|
-          @scanrow[160 - x] = tilerow[x]
-          # by some reason we have to divide this by 4. don't ask me why.
-          @scrn[(linebase + 3)/4] = @palette[:bg][tilerow[x]]
-          x += 1
-          if x == 8 then
-            t = (t + 1) & 31
-            x = 0
-            tile = @vram[mapbase + t]
-            if (tile < 128) then
-              tile = 256 + tile
-            end
-            tilerow = @tilemap[tile][y]
-          end
-          linebase += 4
-        end
       else
         tilerow = @tilemap[@vram[mapbase + t]][y]
         160.downto(1).each do |w|
           @scanrow[160 - x] = tilerow[x]
-          # by some reason we have to divide this by 4. don't ask me why.
-          @scrn[(linebase + 3)/4] = @palette[:bg][tilerow[x]]
+          @scrn[linebase] = @palette[:bg][tilerow[x]]
           x += 1
           if x == 8 then
             t = (t + 1) & 31
             x = 0
             tilerow = @tilemap[@vram[mapbase + t]][y]
           end
-          linebase += 4
+          linebase += 1
         end
       end
     end
@@ -361,59 +320,6 @@ class GPU
       @tilemap[tile][y][x] =
         ((@vram[addr] & sx != 0x00)   ? 1 : 0) |
         ((@vram[addr+1] & sx != 0x00) ? 2 : 0)
-    end
-  end
-
-  def renderscan
-    # VRAM offset for the tile map
-    mapoffs = @bgmap ? 0x1C00 : 0x1800
-
-    # Which line of tiles to use in the map
-    mapoffs += ((@curline + @scy) & 255) >> 3
-
-    # Which tile to start with in the map line
-    lineoffs = (@scx >> 3)
-
-    # Which line of pixels to use in the tiles
-    y = (@curline + @scy) & 7
-
-    # Where in the tileline to start
-    x = @scx & 7
-
-    # Where to render on the canvas
-    canvasoffs = @curline * 160 * 4
-
-    # Read tile index from the background map
-    colour = nil
-    tile = @vram[mapoffs + lineoffs]
-
-    # If the tile data set in use is #1, the
-    # indices are signed; calculate a real tile offset
-    if @bgtile == 1 && tile < 128 then
-      tile += 256
-    end
-
-    160.times do |i|
-      # Re-map the tile pixel through the palette
-      colour = @pal[@tileset[tile][y][x]]
-
-      # Plot the pixel to canvas
-      @scrn[canvasoffs+0] = colour[0]
-      @scrn[canvasoffs+1] = colour[1]
-      @scrn[canvasoffs+2] = colour[2]
-      @scrn[canvasoffs+3] = colour[3]
-      canvasoffs += 4
-
-      # When this tile ends, read another
-      x += 1
-      if x == 8 then
-        x = 0
-        lineoffs = (lineoffs + 1) & 31
-        tile = @vram[mapoffs + lineoffs]
-        if @bgtile == 1 && tile < 128 then
-          tile += 256
-        end
-      end
     end
   end
 

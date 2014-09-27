@@ -31,8 +31,5 @@ end
 screen = LcdScreen.new
 scrn = emulator.gpu.scrn.compact
 
-# clear screen
-# puts "\e[H\e[2J"
-
 screen.screen = scrn
 screen.render

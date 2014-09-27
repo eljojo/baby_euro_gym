@@ -87,12 +87,6 @@ class CPU
     self
   end
 
-  # prints debug information
-  def debug
-    op_index = OPERATIONS.index(@last_operation)
-    puts "step: #{@total_steps}\top: #{@last_operation} (#{op_index})\tpc: #{pc}\ta: #{a}, b: #{b}, c: #{c}, d: #{d}, e: #{e}, f: #{f}, h: #{h}, l: #{l}, hl: #{hl}\tsp: #{sp}, clock m: #{clock_m}"
-  end
-
   def step_counter_step
     op_index = OPERATIONS.index(@last_operation)
     registers = Debugger::Registers.new(a, b, c, d, e, f, h, l, pc)
